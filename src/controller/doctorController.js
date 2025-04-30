@@ -3,75 +3,74 @@ import ErrorHandler from "../utils/errorHandler.js";
 import Doctor from '../model/DoctorModel.js'; // Import the Doctor model
 // Controller function to create a new doctor
 
-//create doctor
 export const createDoctor = catchAsyncError(async (req, res, next) => {
-   
-        const { name, specialization, hospital, about, qualification, awards, experience, fees, availability, phone, email, slots } = req.body;
+    const { 
+        name, specialization, hospital, about, qualification, awards, 
+        experience, fees, availability, phone, email, 
+        hospitalSlots, videoSlots 
+    } = req.body;
 
-        // Validate required fields
-        if (!name || !specialization || !email) {
-            return next(new ErrorHandler(400, 'All fields are required'));
-        }
+    if (!name || !specialization || !email) {
+        return next(new ErrorHandler(400, 'Name, specialization, and email are required'));
+    }
 
-        // Create a new doctor
-        const newDoctor = new Doctor({
-            name,
-            specialization,
-            hospital,
-            about,
-            qualification,
-            awards,
-            experience,
-            fees,
-            availability,
-            contact: {
-                phone,
-                email,
-            },
-            slots,
-            // image: {
-            //     public_id: req.file ? req.file.filename : null, // Assuming you're using multer for file uploads
-            //     url: req.file ? `http://localhost:5000/uploads/${req.file.filename}` : null, // Adjust the URL as needed
-            // },
-            // createdBy: req.user.id, 
-        });
+    const newDoctor = new Doctor({
+        name,
+        specialization,
+        hospital,
+        about,
+        qualification,
+        awards,
+        experience,
+        fees,
+        availability,
+        contact: {
+            phone,
+            email,
+        },
+        hospitalSlots,
+        videoSlots,
+        // image and createdBy logic can go here 
+    });
 
-        // Save the doctor to the database
-        const savedDoctor = await newDoctor.save();
+    const savedDoctor = await newDoctor.save();
 
-        res.status(201).json({
-            success: true,
-            message: 'Doctor created successfully',
-            doctor: savedDoctor,
-        });
-    
-});
-
-
-//get all doctors
-export const getAllDoctors = catchAsyncError(async (req, res, next) => {
-    const doctors = await Doctor.find({ isdeleted: false });
-    res.status(200).json({
+    res.status(201).json({
         success: true,
-        message: 'Doctors fetch successfully',
-        doctors,
+        message: 'Doctor created successfully',
+        doctor: savedDoctor,
     });
 });
 
-//get doctor by id
+
+
+export const getAllDoctors = catchAsyncError(async (req, res, next) => {
+    const doctors = await Doctor.find({ isdeleted: false });
+
+    res.status(200).json({
+        success: true,
+        message: 'Doctors fetched successfully',
+        doctors, // this now includes hospitalSlots and videoSlots by default
+    });
+});
+
+
 export const getDoctorById = catchAsyncError(async (req, res, next) => {
-    const{id }= req.params;
+    const { id } = req.params;
 
     const doctor = await Doctor.findById(id).populate('createdBy', 'name email');
+
     if (!doctor) {
         return next(new ErrorHandler(404, 'Doctor not found'));
     }
+
     res.status(200).json({
         success: true,
-        message: 'Doctor fetch successfully',
-        doctor,
+        message: 'Doctor fetched successfully',
+        doctor, // contains both slots
     });
 });
+
 
 //chnage availability
 export const changeAvailability = catchAsyncError(async (req, res, next) => {
@@ -100,12 +99,15 @@ export const changeAvailability = catchAsyncError(async (req, res, next) => {
 //get All Avlible Doctors
 export const getAllAvailableDoctors = catchAsyncError(async (req, res, next) => {
     const doctors = await Doctor.find({ availability: "available", isdeleted: false });
+
     if (!doctors || doctors.length === 0) {
         return next(new ErrorHandler(404, 'No available doctors found'));
     }
+
     res.status(200).json({
         success: true,
         message: 'Available doctors fetched successfully',
         doctors,
     });
 });
+
