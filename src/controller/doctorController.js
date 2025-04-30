@@ -30,7 +30,7 @@ export const createDoctor = catchAsyncError(async (req, res, next) => {
         },
         hospitalSlots,
         videoSlots,
-        // image and createdBy logic can go here
+        // image and createdBy logic can go here 
     });
 
     const savedDoctor = await newDoctor.save();
