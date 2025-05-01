@@ -9,10 +9,10 @@ const patientSchema = new Schema({
   gender: { type: String, enum: ['Male', 'Female', 'Other'] },
   contact: {
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String },
     address: { type: String }
   },
-  bloodGroup: { type: String },
+  // bloodGroup: { type: String },
 
   ...BaseModelSchema.obj, // Include the base model schema fields
 });

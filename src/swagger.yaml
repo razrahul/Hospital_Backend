@@ -53,33 +53,64 @@ paths:
       summary: create doctor
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
-              example:
-                name: Rahul Kumar
-                specialization: Neuro & Spine Specialist
-                hospital: Neurologist at BrainCare Hospital
-                about: >-
-                  Dr. Neeraj Gupta is a leading neurologist with over 20 years
-                  of experience treating patients with complex neurological
-                  disorders. He is known for his patient-friendly approach,
-                  clinical excellence, and deep involvement in research and
-                  education.
-                qualification: >-
-                  MBBS - AIIMS Delhi | MD Neurology - PGIMER Chandigarh |
-                  Fellowship - Harvard Medical School
-                awards: >-
-                  Best Neurologist of the Year (2019), Global Medical Excellence
-                  Award (2021), Lifetime Achievement in Neurosciences (2023)
-                experience: 20 yrs
-                fees: 300
-                phone: '9708712422'
-                email: raz@gmail.com
-                slots:
-                  - 10:00 AM
-                  - 10:30 AM
-                  - 11:00 AM
+              properties:
+                '':
+                  type: string
+                name:
+                  type: string
+                  example: test
+                specialization:
+                  type: string
+                  example: Neuro & Spine Specialist
+                hospital:
+                  type: string
+                  example: Neurologist at BrainCare Hospital
+                about:
+                  type: string
+                  example: >-
+                    Dr. Neeraj Gupta is a leading neurologist with over 20 years
+                    of experience treating patients with complex neurological
+                    disorders. He is known for his patient-friendly approach,
+                    clinical excellence, and deep involvement in research and
+                    education.
+                qualification:
+                  type: string
+                  example: >-
+                    MBBS - AIIMS Delhi | MD Neurology - PGIMER Chandigarh |
+                    Fellowship - Harvard Medical School.
+                awards:
+                  type: string
+                  example: >-
+                    Best Neurologist of the Year (2019), Global Medical
+                    Excellence Award (2021), Lifetime Achievement in
+                    Neurosciences (2023)
+                experience:
+                  type: string
+                  example: 10 yrs
+                fees:
+                  type: integer
+                  example: '700'
+                ' "availability"':
+                  type: string
+                  example: '"",'
+                phone:
+                  type: integer
+                  example: '9708712422'
+                email:
+                  type: string
+                  example: test1@gmail.com
+                hospitalSlots:
+                  type: string
+                  example: '["10:00 AM", "10:30 AM", "11:00 AM"]'
+                videoSlots:
+                  type: string
+                  example: '["06:00 PM", "07:30 PM", "08:00 PM"]'
+                file:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: Successful response
@@ -196,23 +227,22 @@ paths:
             schema:
               type: object
               example:
-                name: raz rahul
+                name: Rajan kumar
                 age: 24 yrs
                 gender: Male
                 phone: '9708712422'
-                email: razrahul1@gmail.com
+                email: eajan@gmail.com
                 address: Digha Patna
-                bloodGroup: A+
-                date: '2025-04-23'
-                timeSlot: 10:00 AM
-                symptoms: Skin Problem
+                consultationMode: Hospital Visit
+                date: '2025-05-02'
+                timeSlot: 11:00 AM
       parameters:
         - name: id
           in: path
           schema:
             type: string
           required: true
-          example: 6808fd3808a3fc484bce2003
+          example: 6813180b07f2babf2b8637f7
       responses:
         '200':
           description: Successful response
