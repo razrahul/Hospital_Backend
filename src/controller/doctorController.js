@@ -1,113 +1,159 @@
-import {catchAsyncError} from "../middlewares/catchAsyncError.js";
+import { catchAsyncError } from "../middlewares/catchAsyncError.js";
 import ErrorHandler from "../utils/errorHandler.js";
-import Doctor from '../model/DoctorModel.js'; // Import the Doctor model
+import Doctor from "../model/DoctorModel.js"; // Import the Doctor model
+import getDataUri from "../utils/dataUri.js";
+import { v2 as cloudinary } from "cloudinary";
 // Controller function to create a new doctor
 
 export const createDoctor = catchAsyncError(async (req, res, next) => {
-    const { 
-        name, specialization, hospital, about, qualification, awards, 
-        experience, fees, availability, phone, email, 
-        hospitalSlots, videoSlots 
-    } = req.body;
+  const {
+    name,
+    specialization,
+    hospital,
+    about,
+    qualification,
+    awards,
+    experience,
+    fees,
+    availability,
+    phone,
+    email,
+    hospitalSlots,
+    videoSlots,
+  } = req.body;
 
-    if (!name || !specialization || !email) {
-        return next(new ErrorHandler(400, 'Name, specialization, and email are required'));
+  if (!name || !specialization || !email) {
+    return next(
+      new ErrorHandler(400, "Name, specialization, and email are required")
+    );
+  }
+
+  const existingDoctor = await Doctor.findOne({
+    "contact.email": email,
+    isdeleted: false,
+  });
+  // Check if a doctor with the same email already exists
+  if (existingDoctor) {
+     return next(new ErrorHandler(400, "Doctor with this email already exists"));
     }
 
-    const newDoctor = new Doctor({
-        name,
-        specialization,
-        hospital,
-        about,
-        qualification,
-        awards,
-        experience,
-        fees,
-        availability,
-        contact: {
-            phone,
-            email,
-        },
-        hospitalSlots,
-        videoSlots,
-        // image and createdBy logic can go here 
-    });
+  let mycloud = {
+     public_id: null,
+     secure_url: null,
+    };
 
-    const savedDoctor = await newDoctor.save();
+  // Handle file upload
+  if (req.file) {
+     const fileUri = getDataUri(req.file);
+     mycloud = await cloudinary.uploader.upload(fileUri.content, {
+      folder: "doctors",
+     });
+    }
 
-    res.status(201).json({
-        success: true,
-        message: 'Doctor created successfully',
-        doctor: savedDoctor,
-    });
+    const hospitalSlotsarray = JSON.parse(hospitalSlots);
+    const videoSlotsarray = JSON.parse(videoSlots);
+
+
+  const newDoctor = new Doctor({
+    name,
+    specialization,
+    hospital,
+    about,
+    qualification,
+    awards,
+    experience,
+    fees,
+    availability,
+    contact: {
+      phone,
+      email,
+    },
+    hospitalSlots:hospitalSlotsarray,
+    videoSlots: videoSlotsarray,
+    image: {
+      public_id: mycloud.public_id,
+      url: mycloud.secure_url,
+    },
+    // image and createdBy logic can go here
+  });
+
+  const savedDoctor = await newDoctor.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Doctor created successfully",
+    doctor: savedDoctor,
+  });
 });
-
-
 
 export const getAllDoctors = catchAsyncError(async (req, res, next) => {
-    const doctors = await Doctor.find({ isdeleted: false });
+  const doctors = await Doctor.find({ isdeleted: false });
 
-    res.status(200).json({
-        success: true,
-        message: 'Doctors fetched successfully',
-        doctors, // this now includes hospitalSlots and videoSlots by default
-    });
+  res.status(200).json({
+    success: true,
+    message: "Doctors fetched successfully",
+    doctors, // this now includes hospitalSlots and videoSlots by default
+  });
 });
-
 
 export const getDoctorById = catchAsyncError(async (req, res, next) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const doctor = await Doctor.findById(id).populate('createdBy', 'name email');
+  const doctor = await Doctor.findById(id).populate("createdBy", "name email");
 
-    if (!doctor) {
-        return next(new ErrorHandler(404, 'Doctor not found'));
-    }
+  if (!doctor) {
+    return next(new ErrorHandler(404, "Doctor not found"));
+  }
 
-    res.status(200).json({
-        success: true,
-        message: 'Doctor fetched successfully',
-        doctor, // contains both slots
-    });
+  res.status(200).json({
+    success: true,
+    message: "Doctor fetched successfully",
+    doctor, // contains both slots
+  });
 });
-
 
 //chnage availability
 export const changeAvailability = catchAsyncError(async (req, res, next) => {
-    const { id } = req.params;
-    const { availability } = req.body;
+  const { id } = req.params;
+  const { availability } = req.body;
 
-    const doctor = await Doctor.findById(id);
-    if (!doctor) {
-        return next(new ErrorHandler(404, 'Doctor not found'));
-    }
+  const doctor = await Doctor.findById(id);
+  if (!doctor) {
+    return next(new ErrorHandler(404, "Doctor not found"));
+  }
 
-    if (availability === doctor.availability) {
-        return next(new ErrorHandler(400, 'Availability is already set to this value'));
-    }
+  if (availability === doctor.availability) {
+    return next(
+      new ErrorHandler(400, "Availability is already set to this value")
+    );
+  }
 
-    doctor.availability = availability;
-    await doctor.save();
+  doctor.availability = availability;
+  await doctor.save();
 
-    res.status(200).json({
-        success: true,
-        message: 'Availability updated successfully',
-        doctor,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Availability updated successfully",
+    doctor,
+  });
 });
 
 //get All Avlible Doctors
-export const getAllAvailableDoctors = catchAsyncError(async (req, res, next) => {
-    const doctors = await Doctor.find({ availability: "available", isdeleted: false });
+export const getAllAvailableDoctors = catchAsyncError(
+  async (req, res, next) => {
+    const doctors = await Doctor.find({
+      availability: "available",
+      isdeleted: false,
+    });
 
     if (!doctors || doctors.length === 0) {
-        return next(new ErrorHandler(404, 'No available doctors found'));
+      return next(new ErrorHandler(404, "No available doctors found"));
     }
 
     res.status(200).json({
-        success: true,
-        message: 'Available doctors fetched successfully',
-        doctors,
+      success: true,
+      message: "Available doctors fetched successfully",
+      doctors,
     });
-});
-
+  }
+);

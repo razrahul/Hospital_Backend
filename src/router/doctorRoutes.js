@@ -2,9 +2,11 @@ import express from 'express';
 import {createDoctor, getAllDoctors, getDoctorById, changeAvailability, getAllAvailableDoctors } from '../controller/doctorController.js';
 // import { isAuthenticated } from '../middlewares/auth.js';
 
+import singleUpload from '../middlewares/multer.js';
+
 const router = express.Router();
 
-router.post('/doctor', createDoctor);
+router.post('/doctor',singleUpload, createDoctor);
 //get All doctors
 router.get('/doctors', getAllDoctors);
 

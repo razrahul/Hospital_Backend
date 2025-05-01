@@ -8,7 +8,7 @@ import Patient from "../model/PatientModel.js";
 //create Appointment
 export const createAppointment = catchAsyncError(async (req, res, next) => {
   const {id} = req.params; 
-  const { name, age, gender, phone, email, address, bloodGroup, date, timeSlot, symptoms } = req.body;
+  const { name, age, gender, phone, email, address, consultationMode, date, timeSlot } = req.body;
 
   // create patient mosel
   const patient = await Patient.create({
@@ -20,15 +20,16 @@ export const createAppointment = catchAsyncError(async (req, res, next) => {
       email,
       address,
     },
-    bloodGroup,
+    // bloodGroup,
   });
 
   const appointment = new Appointment({
     patient: patient._id,
     doctor: id,
     date: date,
+    consultationMode,
     timeSlot,
-    symptoms,
+    // symptoms,
   });
 
   await appointment.save();
@@ -44,6 +45,35 @@ export const createAppointment = catchAsyncError(async (req, res, next) => {
     appointment 
   });
 });
+// cheack for doctor slot availability
+// Pseudo Code in controller/service while creating appointment
+
+// const doctor = await Doctor.findById(doctorId);
+
+// if (!doctor) {
+//   throw new Error("Doctor not found");
+// }
+
+// let validSlots = [];
+// if (consultationMode === 'Hospital Visit') {
+//   validSlots = doctor.hospitalSlots;
+// } else if (consultationMode === 'Video Call') {
+//   validSlots = doctor.videoSlots;
+// }
+
+// if (!validSlots.includes(timeSlot)) {
+//   throw new Error("Invalid time slot for selected consultation mode");
+// }
+
+// // Now save the appointment
+// const appointment = await Appointment.create({
+//   patient,
+//   doctor: doctorId,
+//   date,
+//   consultationMode,
+//   timeSlot,
+//   status: 'Scheduled', // or as needed
+// });
 
 //  //get all appointments
 export const getAllAppointments = catchAsyncError(async (req, res, next) => {
