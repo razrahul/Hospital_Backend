@@ -86,3 +86,19 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
     },
   });
 });
+
+
+//user logout
+export const logoutUser = catchAsyncError(async (req, res, next) => {
+  // Clear cookie if any
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "Strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out — please remove token on client side",
+  });
+});
