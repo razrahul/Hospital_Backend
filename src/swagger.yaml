@@ -40,6 +40,9 @@ components:
     noauthAuth:
       type: http
       scheme: noauth
+    bearerAuth:
+      type: http
+      scheme: bearer
 tags:
   - name: doctor
   - name: Appointment
@@ -140,6 +143,99 @@ paths:
             type: string
           required: true
           example: 6808fd3808a3fc484bce2003
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - doctor
+      summary: delete doctor
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 6808fd3808a3fc484bce2003
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - doctor
+      summary: update doctor
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: test
+                specialization:
+                  type: string
+                  example: Neuro & Spine Specialist
+                hospital:
+                  type: string
+                  example: Neurologist at BrainCare Hospital
+                about:
+                  type: string
+                  example: >-
+                    Dr. Neeraj Gupta is a leading neurologist with over 20 years
+                    of experience treating patients with complex neurological
+                    disorders. He is known for his patient-friendly approach,
+                    clinical excellence, and deep involvement in research and
+                    education.
+                qualification:
+                  type: string
+                  example: >-
+                    MBBS - AIIMS Delhi | MD Neurology - PGIMER Chandigarh |
+                    Fellowship - Harvard Medical School.
+                awards:
+                  type: string
+                  example: >-
+                    Best Neurologist of the Year (2019), Global Medical
+                    Excellence Award (2021), Lifetime Achievement in
+                    Neurosciences (2023)
+                experience:
+                  type: string
+                  example: 10 yrs
+                fees:
+                  type: integer
+                  example: '700'
+                availability:
+                  type: string
+                  example: available
+                phone:
+                  type: integer
+                  example: '9708712422'
+                email:
+                  type: string
+                  example: test1@gmail.com
+                hospitalSlots:
+                  type: string
+                  example: '["10:00 AM", "10:30 AM", "11:00 AM"]'
+                videoSlots:
+                  type: string
+                  example: '["06:00 PM", "07:30 PM", "08:00 PM"]'
+                file:
+                  type: string
+                  format: binary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
       responses:
         '200':
           description: Successful response
@@ -340,6 +436,25 @@ paths:
                 password: Test@12345
       security:
         - noauthAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /user/{id}:
+    delete:
+      tags:
+        - user
+      summary: delete user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 680d1be1f33eb9354f5fb9c4
       responses:
         '200':
           description: Successful response
