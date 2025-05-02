@@ -57,8 +57,6 @@ paths:
             schema:
               type: object
               properties:
-                '':
-                  type: string
                 name:
                   type: string
                   example: test
@@ -93,9 +91,9 @@ paths:
                 fees:
                   type: integer
                   example: '700'
-                ' "availability"':
+                availability:
                   type: string
-                  example: '"",'
+                  example: available
                 phone:
                   type: integer
                   example: '9708712422'
