@@ -29,8 +29,8 @@ export const protect = async (req, res, next) => {
 
 export const authorizeRoles = (...roles) => {
     return (req, res, next) => {
-      console.log("User role:", req.user.role);
-      console.log("Allowed roles:", roles);
+      // console.log("User role:", req.user.role);
+      // console.log("Allowed roles:", roles);
       if (!roles.includes(req.user.role)) {
         return next(
           new ErrorHandler(
