@@ -3,6 +3,7 @@ import ErrorHandler from "../utils/errorHandler.js";
 import Doctor from "../model/DoctorModel.js"; // Import the Doctor model
 import getDataUri from "../utils/dataUri.js";
 import { v2 as cloudinary } from "cloudinary";
+import { doc } from "prettier";
 // Controller function to create a new doctor
 
 export const createDoctor = catchAsyncError(async (req, res, next) => {
@@ -157,3 +158,98 @@ export const getAllAvailableDoctors = catchAsyncError(
     });
   }
 );
+
+//update doctor
+export const updateDoctor = catchAsyncError(async (req, res, next) => {
+  const { id } = req.params;
+  const {
+    name,
+    specialization,
+    hospital,
+    about,
+    qualification,
+    awards,
+    experience,
+    fees,
+    availability,
+    phone,
+    email,
+    hospitalSlots,
+    videoSlots,
+  } = req.body;
+
+  const doctor = await Doctor.findById(id);
+  if (!doctor) {
+    return next(new ErrorHandler(404, "Doctor not found"));
+  }
+
+  if (name) doctor.name = name;
+  if (specialization) doctor.specialization = specialization;
+  if (hospital) doctor.hospital = hospital;
+  if (about) doctor.about = about;
+  if (qualification) doctor.qualification = qualification;
+  if (awards) doctor.awards = awards;
+  if (experience) doctor.experience = experience;
+  if (fees) doctor.fees = fees;
+  if (availability) doctor.availability = availability;
+  if (phone) doctor.contact.phone = phone;
+  // if (email) doctor.contact.email = email;
+  if (hospitalSlots) doctor.hospitalSlots = hospitalSlots;
+  if (videoSlots) doctor.videoSlots = videoSlots;
+  
+
+  if (email) {
+    const existingDoctor = await Doctor.findOne({
+      "contact.email": email,
+      isdeleted: false,
+    });
+    if (existingDoctor && existingDoctor._id.toString() !== id) {
+      return next(new ErrorHandler(400, "Doctor with this email already exists"));
+    }
+    doctor.contact.email = email;
+  }
+
+ // file upload logic
+  if (req.file) {
+    if (doctor.image.public_id) {
+      await cloudinary.uploader.destroy(doctor.image.public_id);
+    }
+    // Handle file upload
+    // Use the getDataUri function to convert the file to a data URI
+    const fileUri = getDataUri(req.file);
+    const mycloud = await cloudinary.uploader.upload(fileUri.content, {
+      folder: "doctors",
+    });
+    doctor.image.public_id = mycloud.public_id;
+    doctor.image.url = mycloud.secure_url;
+  }
+  
+  doctor.updatedAt = Date.now(); // Update the updatedAt field
+  const updatedDoctor = await doctor.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Doctor updated successfully",
+    doctor: updatedDoctor,
+  });
+});
+
+//delete doctor
+export const deleteDoctor = catchAsyncError(async (req, res, next) => {
+  const { id } = req.params;
+
+  const doctor = await Doctor.findById(id);
+  if (!doctor) {
+    return next(new ErrorHandler(404, "Doctor not found"));
+  }
+
+  doctor.isdeleted = true;
+  doctor.deletedAt = Date.now(); // Set the deletedAt field to the current date and time
+  doctor.deletedBy = req.user._id; // Assuming req.user contains the authenticated user
+  await doctor.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Doctor deleted successfully",
+  });
+});
