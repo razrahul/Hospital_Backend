@@ -54,7 +54,7 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Check if email exists
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, isdeleted: false });
   if (!user) {
     return next(new ErrorHandler(401,"Invalid email or password" ));
   }
@@ -102,3 +102,25 @@ export const logoutUser = catchAsyncError(async (req, res, next) => {
     message: "Logged out — please remove token on client side",
   });
 });
+
+
+//delete user
+export const deleteUser = catchAsyncError(async (req, res, next) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user) {
+    return next(new ErrorHandler(404, "User not found"));
+  }
+
+  user.isdeleted = true;
+  user.deletedAt = Date.now();
+  user.deletedBy = req.user.id; // Assuming req.user contains the logged-in user's info
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "User deleted successfully",
+  });
+});
+
+
+//get all users
