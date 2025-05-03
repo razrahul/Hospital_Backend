@@ -86,6 +86,8 @@ export const getAllPayments = catchAsyncError(async (req, res, next) => {
       paymentId: payment._id,
       amount: payment.amount,
       status: payment.status,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
       patient: {
         name: payment.patient?.name,
         phone: payment.patient?.contact?.phone,
@@ -108,6 +110,103 @@ export const getAllPayments = catchAsyncError(async (req, res, next) => {
       payments: formatted
     });
   });
+
+  //get payment by id
+  export const getPaymentById = catchAsyncError(async (req, res, next) => {
+    const { paymentId } = req.params;
+    const payment = await Payment.findById(paymentId)
+      .populate({
+        path: "patient",
+        select: "name contact.phone contact.email"
+      })
+      .populate({
+        path: "appointment",
+        select: "date timeSlot doctor",
+        populate: {
+          path: "doctor",
+          select: "name specialization fees slots"
+        }
+      });
+
+    if (!payment) return next(new ErrorHandler(404, "Payment not found"));
+
+    const formatted = {
+      paymentId: payment._id,
+      amount: payment.amount,
+      status: payment.status,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+      patient: {
+        name: payment.patient?.name,
+        phone: payment.patient?.contact?.phone,
+        email: payment.patient?.contact?.email,
+      },
+      appointment: {
+        date: payment.appointment?.date,
+        timeSlot: payment.appointment?.timeSlot,
+        doctor: {
+          name: payment.appointment?.doctor?.name,
+          specialization: payment.appointment?.doctor?.specialization,
+          fees: payment.appointment?.doctor?.fees,
+          slots: payment.appointment?.doctor?.slots,
+        }
+      }
+    };
+
+    res.status(200).json({
+      success: true,
+      payment: formatted
+    });
+  });
+
+  // get payment by appointment id
+  export const getPaymentByAppointmentId = catchAsyncError(async (req, res, next) => {
+    const { appointmentId } = req.params;
+    const payment = await Payment.findOne({ appointment: appointmentId })
+      .populate({
+        path: "patient",
+        select: "name contact.phone contact.email"
+      })
+      .populate({
+        path: "appointment",
+        select: "date timeSlot doctor",
+        populate: {
+          path: "doctor",
+          select: "name specialization fees slots"
+        }
+      });
+
+    if (!payment) return next(new ErrorHandler(404, "Payment not found"));
+
+    const formatted = {
+      paymentId: payment._id,
+      amount: payment.amount,
+      status: payment.status,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+      patient: {
+        name: payment.patient?.name,
+        phone: payment.patient?.contact?.phone,
+        email: payment.patient?.contact?.email,
+      },
+      appointment: {
+        date: payment.appointment?.date,
+        timeSlot: payment.appointment?.timeSlot,
+        doctor: {
+          name: payment.appointment?.doctor?.name,
+          specialization: payment.appointment?.doctor?.specialization,
+          fees: payment.appointment?.doctor?.fees,
+          slots: payment.appointment?.doctor?.slots,
+        }
+      }
+    };
+
+    res.status(200).json({
+      success: true,
+      payment: formatted
+    });
+  });
+
   
 
 
