@@ -397,6 +397,44 @@ paths:
           description: Successful response
           content:
             application/json: {}
+  /payment/appointment/{appointmentId}:
+    get:
+      tags:
+        - payment
+      summary: get payment by apponitenrt id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 680912f77ea9cef3c21173a4
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payment/{paymentId}:
+    get:
+      tags:
+        - payment
+      summary: get payment By paymentId
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 680a90eb205bce8b6e424be2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
   /register:
     post:
       tags:
