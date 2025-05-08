@@ -6,6 +6,7 @@ import Payment from "../model/paymentModel.js";
 import Appointment from "../model/AppointmentModel.js";
 
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
 
 export const createPayment = catchAsyncError(async (req, res, next) => {
@@ -207,8 +208,96 @@ export const getAllPayments = catchAsyncError(async (req, res, next) => {
     });
   });
 
-  
 
-
+  // get payment by  date in apponitentment model
+  export const getPaymentByDate = catchAsyncError(async (req, res, next) => {
+    const { date } = req.body;
   
+    if (!date) {
+      return next(new ErrorHandler(400, "Date is required"));
+    }
+  
+    const payments = await Payment.aggregate([
+      // Step 1: Lookup appointment
+      {
+        $lookup: {
+          from: "appointments",
+          localField: "appointment",
+          foreignField: "_id",
+          as: "appointment"
+        }
+      },
+      { $unwind: "$appointment" },
+  
+      // Step 2: Match appointment date
+      {
+        $match: {
+          "appointment.date": new Date(date)
+        }
+      },
+  
+      // Step 3: Lookup doctor (store as top-level "doctor")
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "appointment.doctor",
+          foreignField: "_id",
+          as: "doctor"
+        }
+      },
+      { $unwind: "$doctor" },
+  
+      // Step 4: Lookup patient
+      {
+        $lookup: {
+          from: "patients",
+          localField: "patient",
+          foreignField: "_id",
+          as: "patient"
+        }
+      },
+      { $unwind: "$patient" },
+  
+      // Step 5: Final projection
+      {
+        $project: {
+          amount: 1,
+          status: 1,
+          razorpay_order_id: 1,
+          razorpay_payment_id: 1,
+          razorpay_signature: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          appointment: {
+            _id: "$appointment._id",
+            date: "$appointment.date",
+            timeSlot: "$appointment.timeSlot",
+            consultationMode: "$appointment.consultationMode"
+          },
+          doctor: {
+            _id: "$doctor._id",
+            name: "$doctor.name",
+            specialization: "$doctor.specialization",
+            hospital: "$doctor.hospital",
+            availability: "$doctor.availability",
+            fees: "$doctor.fees"
+          },
+          patient: {
+            _id: "$patient._id",
+            name: "$patient.name",
+            age: "$patient.age",
+            gender: "$patient.gender",
+            phone: "$patient.contact.phone",
+            email: "$patient.contact.email"
+          }
+        }
+      }
+    ]);
+  
+    res.status(200).json({
+      success: true,
+      message: "Payments fetched successfully",
+      payments,
+    });
+  });
   
