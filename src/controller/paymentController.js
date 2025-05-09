@@ -288,7 +288,8 @@ export const getAllPayments = catchAsyncError(async (req, res, next) => {
             age: "$patient.age",
             gender: "$patient.gender",
             phone: "$patient.contact.phone",
-            email: "$patient.contact.email"
+            email: "$patient.contact.email",
+            address: "$patient.contact.address"
           }
         }
       }
@@ -297,6 +298,84 @@ export const getAllPayments = catchAsyncError(async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Payments fetched successfully",
+      payments,
+    });
+  });
+
+  export const getAllPaymentsWithDetails = catchAsyncError(async (req, res, next) => {
+    const payments = await Payment.aggregate([
+      {
+        $lookup: {
+          from: "appointments",
+          localField: "appointment",
+          foreignField: "_id",
+          as: "appointment"
+        }
+      },
+      { $unwind: "$appointment" },
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "appointment.doctor",
+          foreignField: "_id",
+          as: "doctor"
+        }
+      },
+      { $unwind: "$doctor" },
+      {
+        $lookup: {
+          from: "patients",
+          localField: "patient",
+          foreignField: "_id",
+          as: "patient"
+        }
+      },
+      { $unwind: "$patient" },
+  
+      // ✅ Sort by appointment.date descending (latest first)
+      {
+        $sort: { "appointment.createdAt": -1 }
+      },
+  
+      {
+        $project: {
+          amount: 1,
+          status: 1,
+          razorpay_order_id: 1,
+          razorpay_payment_id: 1,
+          razorpay_signature: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          appointment: {
+            _id: "$appointment._id",
+            date: "$appointment.date",
+            timeSlot: "$appointment.timeSlot",
+            consultationMode: "$appointment.consultationMode"
+          },
+          doctor: {
+            _id: "$doctor._id",
+            name: "$doctor.name",
+            specialization: "$doctor.specialization",
+            hospital: "$doctor.hospital",
+            availability: "$doctor.availability",
+            fees: "$doctor.fees"
+          },
+          patient: {
+            _id: "$patient._id",
+            name: "$patient.name",
+            age: "$patient.age",
+            gender: "$patient.gender",
+            phone: "$patient.contact.phone",
+            email: "$patient.contact.email",
+            address: "$patient.contact.address"
+          }
+        }
+      }
+    ]);
+  
+    res.status(200).json({
+      success: true,
+      message: "All payments fetched successfully (sorted by appointment date)",
       payments,
     });
   });
