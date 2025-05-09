@@ -1,6 +1,6 @@
 
 import express from "express";
-import { createPayment, verifyPayment, getAllPayments, getPaymentById, getPaymentByAppointmentId, getPaymentByDate } from "../controller/paymentController.js";
+import { createPayment, verifyPayment, getAllPayments, getPaymentById, getPaymentByAppointmentId, getPaymentByDate, getAllPaymentsWithDetails } from "../controller/paymentController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -18,6 +18,9 @@ router.get("/payment/appointment/:appointmentId", protect, getPaymentByAppointme
 
 // get payment by date
 router.post("/payment/date", getPaymentByDate);
+
+//get all payments with details
+router.get("/payment/all/details", protect, getAllPaymentsWithDetails);
 
 
 
