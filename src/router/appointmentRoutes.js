@@ -1,5 +1,6 @@
 import express from 'express';
-import { createAppointment, getAllAppointments, getAppointmentByDate} from '../controller/appointmentController.js';
+import { createAppointment, getAllAppointments, getAppointmentByDate, getAllHospitalVisitAppointments} from '../controller/appointmentController.js';
+import { get } from 'http';
 
 const router = express.Router();
 
@@ -12,5 +13,7 @@ router.get('/appoints', getAllAppointments);
 //get appointment by date
 router.get('/appoints/:date', getAppointmentByDate);
 
+//get All hospital visit appointments
+router.get('/offline/hospital-visit', getAllHospitalVisitAppointments);
 
 export default router;

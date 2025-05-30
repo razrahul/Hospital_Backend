@@ -95,6 +95,29 @@ export const getAllAppointments = catchAsyncError(async (req, res, next) => {
   });
 
 
+export const getAllHospitalVisitAppointments = catchAsyncError(async (req, res, next) => {
+  const appointments = await Appointment.find({
+    consultationMode: "Hospital Visit",
+    isdeleted: false
+  }).sort({ createdAt: -1 })
+    .populate({
+      path: 'patient',
+      select: 'name age gender bloodGroup contact.phone contact.email contact.address'
+    })
+    .populate({
+      path: 'doctor',
+      select: 'name specialization fees availability slots'
+    });
+
+  res.status(200).json({
+    success: true,
+    message: 'Hospital visit appointments fetched successfully',
+    appointments
+  });
+});
+
+
+
   // get appointment by  date
 export const getAppointmentByDate = catchAsyncError(async (req, res, next) => {
     const { date } = req.params;

@@ -14,7 +14,7 @@ const paymentSchema = new Schema({
   status: {
     type: String,
     enum: ["created", "completed", "failed"],
-    default: "created"
+    default: "failed"
   },
   ...BaseModelSchema.obj,
 });
