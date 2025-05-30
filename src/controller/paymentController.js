@@ -14,7 +14,11 @@ export const createPayment = catchAsyncError(async (req, res, next) => {
   
     const appointment = await Appointment.findById(appointmentId).populate("patient doctor");
     if (!appointment) return next(new ErrorHandler(404, "Appointment not found" ));
-  
+
+    if( appointment.consultationMode === "Hospital Visit" ) {
+      return next(new ErrorHandler(400, "Payment can not be created for Hospital Visit appointments"));
+    }
+
     const amount = appointment.doctor.fees * 100; // Razorpay accepts amount in paise
   
     const options = {
